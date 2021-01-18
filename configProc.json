@@ -1,0 +1,10 @@
+{
+    "SUPERVIVENCIA":{
+        "Path": "C:\\Proyectos\\BrioClub\\Fuentes 4.0\\Fuentes\\fer.txt",
+        "Minutos": 10
+    },
+    "PROCESO":{
+        "Cliente": "Brio.exe",
+        "PathCliente": "C:\\Proyectos\\BrioClub\\Fuentes 4.0\\Fuentes\\Brio.exe"
+    }
+}
