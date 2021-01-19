@@ -1,10 +1,11 @@
 {
     "SUPERVIVENCIA":{
-        "Path": "C:\\Proyectos\\BrioClub\\Fuentes 4.0\\Fuentes\\fer.txt",
+        "Path": "C:\\Brio\\SedeVirtualCliente\\Supervivencia\\Registro.txt",
         "Minutos": 10
     },
     "PROCESO":{
-        "Cliente": "Brio.exe",
-        "PathCliente": "C:\\Proyectos\\BrioClub\\Fuentes 4.0\\Fuentes\\Brio.exe"
+        "Cliente": "cliente.exe",
+        "PathCliente": "C:\\Brio\\SedeVirtualCliente\\cliente.exe",
+        "PathConfig": "C:\\Brio\\SedeVirtualCliente\\config.json"
     }
 }

@@ -18,13 +18,11 @@ def configLog(name, log_file, level=logging.DEBUG):
 
     return logger
 
-def leerConfig():
-    config = json.loads(open('configProc.json', 'r').read())
-    return config
+def today():
+    today = date.today()
+    return "{}{:02d}{:02d}".format(today.year, today.month, today.day)
 
 def logArchivo(proceso, funcion, msj):
-    config = leerConfig()
-    # if config['LOGFULL']['ARCHIVO']:
     name = "C:\\Log\\BOT_ARCHIVO_%s.log" % (today())
 
     logger = configLog("ARCHIVO",name)

@@ -1,69 +1,80 @@
 import wmi
 import json
 import os
-import time
+import time 
+import signal
+import subprocess
+from util import *
+from log import *
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
+def obtenerConfig():
+    global config 
+    config = leerConfig()
+
 def leerConfig():
-    config = json.loads(open('configProc.json', 'r').read())
+    configpath = leerConfigPath()[1] + 'configProc.json'
+    file = open(configpath, 'r').read()
+    config = json.loads(file)
     return config
 
 def iniciarProceso(proc):
-    config = leerConfig()
-    print(config['PROCESO']['PathCliente'])
     SW_SHOWNORMAL = 1
 
-    print("Iniciamos proceso!")
-    process_startup = proc.Win32_ProcessStartup.new()
-    process_startup.ShowWindow = SW_SHOWNORMAL
-    proc.Win32_Process.Create(CommandLine=config['PROCESO']['PathCliente'], ProcessStartupInformation = process_startup)
+    try:
+        process_startup = proc.Win32_ProcessStartup.new()
+        process_startup.ShowWindow = SW_SHOWNORMAL
+        commandlinec = f"{config['PROCESO']['PathCliente']} {config['PROCESO']['PathConfig']}"
+        proc.Win32_Process.Create(CommandLine=commandlinec, ProcessStartupInformation = process_startup)
+    except Exception as exp:
+        logArchivo("procesos.py", "iniciarProceso", exp)
 
 def VerificarSupervivenciaProceso(proc, pid):
-    if chequeaProceso(): #chequeamos si lleva mas de 30' sin modificar archivo de supervivencia 
-        print(f"Terminamos proceso! {pid}")
-        proc.Win32_Process(ProcessId=pid)[0].Terminate() #lo terminamos
+    if chequeaProceso(): 
+        KillProcess()
         iniciarProceso(proc) #lo iniciamos
 
 def chequeaProceso():
-    config = leerConfig()
     #devuelve los minutos en que fue modificado
-    ultMod = os.path.getmtime(config['SUPERVIVENCIA']['Path'])
-    ultModTime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(ultMod))
-
-    #obtenemos los minutos actuales
+    ultMod =  datetime.fromtimestamp(os.path.getmtime(config['SUPERVIVENCIA']['Path']))
+    
+    #Obtener fecha actual 
     actual = datetime.now()
-    actual = actual.strftime("%Y-%m-%d %H:%M:%S")
-
-    ultModTime = datetime.strptime(ultModTime, '%Y-%m-%d %H:%M:%S')
-    actual = datetime.strptime(actual, '%Y-%m-%d %H:%M:%S')
     
     #Calcula diferencia
-    diff = relativedelta(actual, ultModTime)
-    
-    if diff.minutes >= config['SUPERVIVENCIA']['Minutos']: #Hace mas de 30 min que se modifico
-        print(f"{diff.minutes} Minutos sin procesar información.")
+    diff = relativedelta(actual, ultMod)
+
+    if diff.days >= 1:
+        return True 
+
+    if diff.hours >= 1:
+        return True
+
+    if diff.minutes >= config['SUPERVIVENCIA']['Minutos']: 
         return True
 
     return False
 
-def bot():
-    
-    config = leerConfig()
+def bot():    
+    obtenerConfig()
     encontro = False
     pid = 0
 
     proc = wmi.WMI()
-    for process in proc.Win32_Process(): #obtiene todos los procesos que se encuentran activos
+    for process in proc.Win32_Process(Name=config['PROCESO']['Cliente']): 
+        # print(f"{process.ProcessId:<10} {process.Name}")
+        pid = process.ProcessId
+        encontro = True    
 
-        if process.Name == config['PROCESO']['Cliente']: #preguntamos si es uno de los activos
-            print(f"{process.ProcessId:<10} {process.Name}")
-            pid = process.ProcessId
-            encontro = True
-
-    if not encontro:
+    if not encontro:  
+        # print('Inicia Proceso porque no lo econtro')
         iniciarProceso(proc)
     else:
+        # print('Lo encontre vamos a verificar la supervivencia')
         VerificarSupervivenciaProceso(proc, pid)
-        
-
+            
+def KillProcess():
+    si = subprocess.STARTUPINFO()
+    si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    subprocess.call(["taskkill", "/IM", config['PROCESO']['Cliente'], "/T", "/F"], startupinfo=si)
