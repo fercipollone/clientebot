@@ -27,6 +27,7 @@ def iniciarProceso(proc):
         process_startup.ShowWindow = SW_SHOWNORMAL
         commandlinec = f"{config['PROCESO']['PathCliente']} {config['PROCESO']['PathConfig']}"
         proc.Win32_Process.Create(CommandLine=commandlinec, ProcessStartupInformation = process_startup)
+        logArchivo("procesos.py", "iniciarProceso", 'Levanto el cliente')
     except Exception as exp:
         logArchivo("procesos.py", "iniciarProceso", exp)
 
