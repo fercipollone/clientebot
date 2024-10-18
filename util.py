@@ -3,7 +3,7 @@ import os
 
 def leerConfigPath():
     status = False 
-    configpath = os.environ.get('clientepathcomodoro', '0') 
+    configpath = os.environ.get('clientepatharenasports', '0') 
     if (not configpath == '0'):
         status = True
     return [status, configpath]
